@@ -1,0 +1,35 @@
+name: Build BlueWake Android APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 120
+    steps:
+      - name: Free up disk space
+        run: |
+          sudo rm -rf /usr/share/dotnet /usr/local/lib/android /opt/ghc
+          df -h
+
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download Wind Waker ISO from private release
+        env:
+          GH_TOKEN: ${{ secrets.GH_PAT }}
+        run: |
+          gh release download V1 --repo Junepo9/my-iso-storage --pattern "*.iso" -O GZLE01.iso
+
+      - name: Build Android APK in CI container
+        run: |
+          python3 scripts/android/build.py GZLE01.iso --ci-container
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: WindWakerRecomp-APK
+          path: build/android/WindWakerRecomp.apk
+          retention-days: 1
+          
