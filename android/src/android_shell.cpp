@@ -457,7 +457,8 @@ JNIEXPORT jstring SHELL(nativeDiscPrepare)(JNIEnv* env, jclass, jstring iso, jst
         char err[512] = {0};
         if (bluewake_disc_check(iso_path, err, sizeof err) != 0) {
             reason = err;
-        } else if (bluewake_disc_prepare(iso_path, dir_path, nullptr, nullptr, err, sizeof err) != 0) {
+        } else if (bluewake_disc_prepare(iso_path, dir_path, nullptr, nullptr, nullptr, nullptr  } else if (bluewake_disc_prepare(iso_path, dir_path, nullptr, nullptr, nullptr, nullptr, err, sizeof err) != 0) {
+      err, sizeof err) != 0) {
             reason = err;
         }
     }
