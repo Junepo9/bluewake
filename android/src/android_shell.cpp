@@ -447,27 +447,33 @@ JNIEXPORT jstring SHELL(nativeDiscCheck)(JNIEnv* env, jclass, jstring iso) {
     return env->NewStringUTF(err[0] != '\0' ? err : "The disc image cannot be used.");
 }
 
+static void bw_noop_progress(void*, double, const char*) {}
+static int bw_noop_cancelled(void*) { return 0; }
+
 JNIEXPORT jstring SHELL(nativeDiscPrepare)(JNIEnv* env, jclass, jstring iso, jstring game_dir) {
-    const char* iso_path = utf(env, iso);
-    const char* dir_path = utf(env, game_dir);
-    const char* reason = nullptr;
-    if (iso_path == nullptr || dir_path == nullptr) {
-        reason = "The disc image could not be read.";
-    } else {
-        char err[512] = {0};
-        if (bluewake_disc_check(iso_path, err, sizeof err) != 0) {
-            reason = err;
-        } else if (bluewake_disc_prepare(iso_path, dir_path, nullptr, nullptr, nullptr, nullptr, err, sizeof err) != 0) {
-          
-            reason = err;
-        }
-    }
-    if (iso_path != nullptr) env->ReleaseStringUTFChars(iso, iso_path);
-    if (dir_path != nullptr) env->ReleaseStringUTFChars(game_dir, dir_path);
-    // null on success; the reason on failure (the Java caller checks null).
-    if (reason != nullptr)
-        return env->NewStringUTF(reason);
-    return nullptr;
+  const char* iso_path = utf(env, iso);
+  const char* dir_path = utf(env, game_dir);
+  char err[512] = {0};
+  bool has_error = false;
+
+  if (iso_path == nullptr || dir_path == nullptr) {
+    snprintf(err, sizeof err, "The disc image could not be read.");
+    has_error = true;
+  } else if (bluewake_disc_check(iso_path, err, sizeof err) != 0) {
+    has_error = true;
+  } else if (bluewake_disc_prepare(iso_path, dir_path, bw_noop_progress, nullptr, bw_noop_cancelled, nullptr, err, sizeof err) != 0) {
+    has_error = true;
+  }
+
+  if (iso_path != nullptr) env->ReleaseStringUTFChars(iso, iso_path);
+  if (dir_path != nullptr) env->ReleaseStringUTFChars(game_dir, dir_path);
+
+  if (has_error) {
+    return env->NewStringUTF(err[0] != '\0' ? err : "Disc import failed.");
+  }
+  return nullptr;
+}
+
 }
 
 // BlueWake's card as a Dolphin .gci (its 64-byte directory entry, then the
