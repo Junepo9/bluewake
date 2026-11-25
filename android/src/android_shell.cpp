@@ -474,8 +474,6 @@ JNIEXPORT jstring SHELL(nativeDiscPrepare)(JNIEnv* env, jclass, jstring iso, jst
   return nullptr;
 }
 
-}
-
 // BlueWake's card as a Dolphin .gci (its 64-byte directory entry, then the
 // 98,304 bytes of save data), or null with the reason in error[0]. On demand:
 // the card bytes are only read, and the caller writes the file wherever the
