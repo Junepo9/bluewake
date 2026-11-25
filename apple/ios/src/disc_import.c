@@ -671,10 +671,15 @@ int bluewake_disc_prepare(const char* iso_path, const char* out_dir,
     }
     arc = read_at(f, arc_off, arc_len);
     size_t arc_size = arc_len;
-    if (arc != NULL && arc_size >= 4 && memcmp(arc, "Yaz0", 4) == 0) {
+        if (arc != NULL && arc_size >= 4 && memcmp(arc, "Yaz0", 4) == 0) {
         uint8_t* plain = yaz0_decode(arc, arc_size, &arc_size);
         free(arc);
         arc = plain;
+        if (arc == NULL) {
+            fail(error, error_size, "Could not decompress RELS.arc.");
+            goto done;
+        }
+
     }
     int64_t arc_need = 0;
     const int arc_members =
