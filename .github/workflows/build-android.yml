@@ -6,7 +6,7 @@ on:
 jobs:
   build-apk:
     runs-on: ubuntu-24.04
-    timeout-minutes: 120
+    timeout-minutes: 360
     steps:
       - name: Free up disk space
         run: |
@@ -24,12 +24,11 @@ jobs:
 
       - name: Build Android APK in CI container
         run: |
-          python3 scripts/android/build.py GZLE01.iso --ci-container
+          python3 scripts/android/build.py GZLE01.iso --ci-container --cpu cortex-a53
 
       - name: Upload APK artifact
         uses: actions/upload-artifact@v4
         with:
           name: WindWakerRecomp-APK
           path: build/android/WindWakerRecomp.apk
-          retention-days: 1
-          
+          retention-days: 7
